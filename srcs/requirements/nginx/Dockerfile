@@ -2,7 +2,7 @@
 FROM debian:buster
 
 ## da update e instala o nginx e o openssl
-RUN apt-get update -y \
+RUN apt-get update -y; \
         apt-get install -y nginx openssl
 
 ## copia do ficheiro conf para o diretorio trocando para a minha config do nginx
