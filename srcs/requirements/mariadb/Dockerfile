@@ -1,17 +1,23 @@
-# uso do debian (buster) como ponto inicial do meu container
-FROM debian:buster
+# Dockerfile-mariadb
+FROM debian:bullseye
 
-## da update e instala mariadb
-RUN apt-get update && apt-get upgrade -y; \
-    apt-get install -y mariadb-server;
+# Install MariaDB
+RUN apt-get update && \
+    apt-get install -y\
+            mariadb-server && \
+    rm -rf /var/lib/apt/lists/*
 
-## copia do ficheiro tools para o diretorio tmp
-## copia a configuracao de 50servercnf para a conf do mariadb
-COPY ./tools /tmp/
-COPY ./conf/50-server.cnf /etc/mysql/mariadb.conf.d/
+# Create necessary directories and set permissions
+RUN mkdir -p /var/run/mysqld && \
+    chown -R mysql:mysql /var/run/mysqld && \
+    chown -R mysql:mysql /var/lib/mysql
 
-#da as permissoes ao script (-x permissao para ser usado como script)
-RUN chmod +x /tmp/seeder.sh
+# Remove the default MySQL configuration
+RUN rm -f /etc/mysql/my.cnf
 
-## certifica que o script seeder corre sempre  que executado
-ENTRYPOINT ["sh", "-c", "/tmp/seeder.sh;"]
+# Copy the entrypoint script
+COPY ./tools/entry.sh /tmp/entry.sh
+RUN chmod 755 /tmp/entry.sh
+
+# Set the entrypoint script as the entry point for the container
+ENTRYPOINT ["/bin/bash", "/tmp/entry.sh"]

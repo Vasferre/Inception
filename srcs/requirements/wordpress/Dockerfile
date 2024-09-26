@@ -1,14 +1,27 @@
-FROM debian:buster
+# Dockerfile-wordpress
+FROM debian:bullseye
 
-RUN apt-get update -y; \
-    apt-get install -y php7.3 \
-                    php7.3-mysql \
-                    php7.3-fpm \
-                    curl
+# Install necessary packages
+RUN apt update -y && \
+    apt install -y \
+        php7.4-fpm \
+        php7.4-mysql \
+        curl \
+    && rm -rf /var/lib/apt/lists/* \
+	&& apt-get clean
 
-COPY ./conf/wp-config.php /tmp/
-COPY ./tools/ /tmp/
+# Create necessary directories and set permissions
+RUN mkdir -p /var/www/html
 
-RUN chmod +x /tmp/setup.sh
+# Copy the necessary files
+COPY ./conf/www.conf /tmp/www.conf
+COPY ./tools/entry.sh /tmp/entry.sh
+COPY ./conf/wp-config.php /tmp/wp-config.php
 
-ENTRYPOINT [ "sh", "-c", "/tmp/setup.sh;" ]
+# Set permissions
+RUN chmod 755 /tmp/www.conf
+RUN chmod 755 /tmp/entry.sh
+RUN chmod 755 /tmp/wp-config.php
+
+# Set the entrypoint script as the entry point for the container
+ENTRYPOINT ["/bin/bash", "/tmp/entry.sh"]
